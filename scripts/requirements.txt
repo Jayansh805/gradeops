@@ -1,0 +1,32 @@
+# ── Core ──────────────────────────────────────
+pydantic>=2.0
+python-dotenv
+
+# ── OCR ───────────────────────────────────────
+pymupdf                          # PDF → image (fitz)
+Pillow                           # image handling
+transformers>=4.40               # Qwen2-VL
+torch>=2.0                       # PyTorch
+accelerate                       # HuggingFace multi-device
+# nougat-ocr                     # uncomment if using Nougat backend
+
+# ── Grading ───────────────────────────────────
+langchain>=0.2
+langchain-core>=0.2
+langgraph>=0.1
+langchain-openai                 # comment out if not using OpenAI
+# langchain-anthropic            # uncomment for Anthropic
+# langchain-together             # uncomment for Together AI
+
+# ── Plagiarism ────────────────────────────────
+scikit-learn
+numpy
+# sentence-transformers          # uncomment for embedding-based similarity
+
+# ── Storage ───────────────────────────────────
+boto3                            # AWS S3 / DynamoDB (comment out if not using)
+
+# ── API ───────────────────────────────────────
+fastapi>=0.110
+uvicorn[standard]
+python-multipart                 # for UploadFile form parsing
