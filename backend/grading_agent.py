@@ -35,19 +35,24 @@ logger = logging.getLogger(__name__)
 def build_llm(provider: str, model_name: str, temperature: float = 0.0):
     """
     Returns a LangChain chat model.
-    Supported providers: "openai" | "anthropic" | "together" | "gemini" | "mock"
+    Supported providers: "openai" | "anthropic" | "together" | "gemini" | "groq" | "mock"
     """
+    provider = provider.lower()
+    
     if provider == "openai":
         from langchain_openai import ChatOpenAI
-        return ChatOpenAI(model=model_name, temperature=temperature)
+        from config import settings
+        return ChatOpenAI(model=model_name, temperature=temperature, api_key=settings.openai_api_key)
 
     elif provider == "anthropic":
         from langchain_anthropic import ChatAnthropic
-        return ChatAnthropic(model=model_name, temperature=temperature)
+        from config import settings
+        return ChatAnthropic(model=model_name, temperature=temperature, api_key=settings.anthropic_api_key)
 
     elif provider == "together":
         from langchain_together import ChatTogether
-        return ChatTogether(model=model_name, temperature=temperature)
+        from config import settings
+        return ChatTogether(model=model_name, temperature=temperature, api_key=settings.together_api_key)
 
     elif provider == "gemini":
         from langchain_google_genai import ChatGoogleGenerativeAI
@@ -55,6 +60,15 @@ def build_llm(provider: str, model_name: str, temperature: float = 0.0):
         return ChatGoogleGenerativeAI(
             model=model_name,
             google_api_key=settings.gemini_api_key,
+            temperature=temperature,
+        )
+
+    elif provider == "groq":
+        from langchain_groq import ChatGroq
+        from config import settings
+        return ChatGroq(
+            model=model_name,
+            api_key=settings.groq_api_key,
             temperature=temperature,
         )
 
@@ -156,10 +170,9 @@ def make_grade_criterion_node(llm):
 
         try:
             response = llm.invoke(messages)
-            # Respect Gemini free-tier rate limit (15 RPM).
-            # 0.5 s gap keeps bursts well under the ceiling.
+            # Gentle rate limit buffer
             time.sleep(0.5)
-            # Strip markdown fences — Gemini sometimes wraps response in ```json
+            # Strip markdown fences 
             content = response.content
             if "```json" in content:
                 content = content.split("```json")[1].split("```")[0].strip()
@@ -214,14 +227,14 @@ class GradingAgent:
     LangGraph-powered agentic grader.
 
     Args:
-        llm_provider: "openai" | "anthropic" | "together" | "gemini" | "mock"
+        llm_provider: "openai" | "anthropic" | "together" | "gemini" | "groq" | "mock"
         model_name:   Provider-specific model name.
     """
 
     def __init__(
         self,
         llm_provider: str = "gemini",
-        model_name: str = "gemini-2.0-flash",   # updated from gemini-1.5-flash
+        model_name: str = "gemini-2.0-flash",   
         temperature: float = 0.0,
     ):
         self.llm = build_llm(llm_provider, model_name, temperature)

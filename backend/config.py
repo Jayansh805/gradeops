@@ -45,22 +45,23 @@ class Settings(BaseSettings):
     ocr_device:       str = "cpu"        # cpu | cuda (only for qwen_vl/nougat)
     ocr_dpi:          int = 200
     ocr_crop_dir:     str = "./crops"
-    gemini_ocr_model: str = "gemini-2.5-flash"   # change to gemini-1.5-pro for higher accuracy
+    gemini_ocr_model: str = "gemini-2.5-flash-lite"   # change to gemini-1.5-pro for higher accuracy
 
     # ── Grading LLM ───────────────────────────
-    llm_provider:  str = "gemini"     # gemini | openai | anthropic | together | mock
-    llm_model:     str = "gemini-2.5-flash"
+    llm_provider:  str = "groq"       # groq | gemini | openai | anthropic | together | mock
+    llm_model:     str = "llama-3.3-70b-versatile"
     llm_temp:      float = 0.0
 
+    groq_api_key:      str = ""       # Set GROQ_API_KEY in .env
     openai_api_key:    str = ""
     anthropic_api_key: str = ""
     together_api_key:  str = ""
-    gemini_api_key:    str = ""       # Set GEMINI_API_KEY in .env
+    gemini_api_key:    str = ""       # Used for OCR_BACKEND
 
     # ── Plagiarism ────────────────────────────
-    plagiarism_threshold:  float = 0.82
-    plagiarism_embeddings: bool = False
-    embedding_model:       str = "all-MiniLM-L6-v2"
+    plagiarism_threshold:  float = 0.85
+    plagiarism_embeddings: bool = True
+    embedding_model:       str = "all-mpnet-base-v2"
 
     # ── Storage ───────────────────────────────
     storage_backend:  str = "local"
