@@ -1,0 +1,61 @@
+# ─────────────────────────────────────────────
+# GradeOps — Python Dependencies
+# Install: pip install -r requirements.txt
+# ─────────────────────────────────────────────
+
+# ── Core / Config ─────────────────────────────
+pydantic>=2.0
+pydantic-settings>=2.0        # Settings class reads from .env
+python-dotenv
+
+# ── Authentication / Security ─────────────────
+python-jose[cryptography]     # JWT token encoding/decoding
+bcrypt==4.0.1                 # PINNED — newer versions break passlib
+passlib[bcrypt]==1.7.4        # PINNED — must match bcrypt 4.0.1
+email-validator>=2.0          # required by Pydantic for EmailStr validation
+
+# ── OCR ───────────────────────────────────────
+pymupdf                       # PDF → image (fitz)
+Pillow                        # image handling
+
+# Google Gemini Vision API — used for OCR (no GPU required)
+google-generativeai>=0.8
+
+# Uncomment ONLY if switching to GPU-based OCR backends (qwen_vl / nougat):
+# torch>=2.0
+# transformers>=4.40
+# accelerate
+
+# ── Grading LLM ───────────────────────────────
+langchain>=0.2
+langchain-core>=0.2
+langgraph>=0.1
+langchain-google-genai>=1.0   # Gemini via LangChain (used by grading_agent.py)
+
+# Uncomment for alternative LLM providers:
+# langchain-openai             # for OpenAI GPT models
+# langchain-anthropic          # for Anthropic Claude models
+# langchain-together           # for Together AI
+
+# ── Plagiarism ────────────────────────────────
+scikit-learn
+numpy
+# sentence-transformers       # uncomment for embedding-based similarity (PLAGIARISM_EMBEDDINGS=true)
+
+# ── Storage ───────────────────────────────────
+# boto3                       # uncomment for AWS S3 / DynamoDB (STORAGE_BACKEND=s3)
+
+# ── Database (PostgreSQL via SQLAlchemy) ──────
+sqlalchemy[asyncio]>=2.0      # ORM + async core
+asyncpg>=0.29                 # async PostgreSQL driver
+# aiosqlite                   # uncomment for SQLite in local dev / CI
+
+# ── API ───────────────────────────────────────
+fastapi>=0.110
+uvicorn[standard]
+python-multipart              # UploadFile / multipart form parsing
+
+# ── Dev / Testing ─────────────────────────────
+httpx                         # async HTTP client for FastAPI TestClient
+pytest
+pytest-asyncio

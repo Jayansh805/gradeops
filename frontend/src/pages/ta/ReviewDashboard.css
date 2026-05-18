@@ -1,0 +1,204 @@
+.review-page { position: relative; }
+
+/* Toast */
+.review-toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  background: var(--surface);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  box-shadow: var(--shadow-gold);
+  z-index: 9999;
+}
+
+/* Stats bar */
+.stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+.progress-wrap {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* Review layout */
+.review-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Grade list */
+.grade-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+.grade-list-item {
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.13s;
+}
+.grade-list-item:hover  { border-color: var(--border2); }
+.grade-list-item.active { border-color: var(--gold); background: var(--gold-glow); }
+.grade-list-item.plagiarism { border-color: rgba(192,132,252,0.4); }
+
+/* Grade detail */
+.grade-detail {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.score-ring {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  background: rgba(0,0,0,0.3);
+  border: 2px solid var(--score-color, var(--gold));
+  border-radius: 12px;
+  padding: 8px 16px;
+  box-shadow: 0 0 16px var(--score-color, var(--gold-glow));
+}
+.score-num {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--score-color, var(--gold));
+  line-height: 1;
+}
+.score-denom {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--text-dim);
+}
+
+.detail-section h4 {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.ocr-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: var(--text);
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.criteria-list { display: flex; flex-direction: column; gap: 8px; }
+.criterion-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.criterion-desc { font-size: 13px; flex: 1; }
+.criterion-pts { font-size: 14px; font-weight: 700; flex-shrink: 0; }
+
+.detail-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.modal-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: var(--shadow);
+}
+
+/* Lookup row (shared) */
+.lookup-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.lookup-row .form-input { flex: 1; }
+
+.mb-4 { margin-bottom: 16px; }
+
+/* Crop image — side-by-side student handwriting display */
+.crop-image-wrap {
+  background: var(--surface2, #1a1a2e);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  max-height: 340px;
+}
+.crop-image {
+  display: block;
+  max-width: 100%;
+  max-height: 340px;
+  object-fit: contain;
+}

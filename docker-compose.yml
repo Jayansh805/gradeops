@@ -1,0 +1,65 @@
+services:
+  # ── PostgreSQL ──────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: gradeops_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     gradeops
+      POSTGRES_PASSWORD: gradeops
+      POSTGRES_DB:       gradeops
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gradeops"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── FastAPI Backend ─────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gradeops_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL:     postgresql+asyncpg://gradeops:gradeops@postgres:5432/gradeops
+      JWT_SECRET:       ${JWT_SECRET:-change_this_to_a_long_random_secret_32chars}
+      # Set OCR_BACKEND and LLM_PROVIDER to "gemini" for real AI grading,
+      # or keep "mock" for local testing without an API key.
+      OCR_BACKEND:      ${OCR_BACKEND:-gemini}
+      LLM_PROVIDER:     ${LLM_PROVIDER:-gemini}
+      LLM_MODEL:        ${LLM_MODEL:-gemini-2.0-flash}
+      GEMINI_API_KEY:   ${GEMINI_API_KEY:-}
+      STORAGE_BACKEND:  local
+      STORAGE_DATA_DIR: /app/gradeops_data
+      LOG_LEVEL:        INFO
+      DEBUG:            "false"
+    volumes:
+      - gradeops_data:/app/gradeops_data
+      - gradeops_crops:/app/crops
+    ports:
+      - "8000:8000"
+
+  # ── React Frontend ──────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gradeops_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  pgdata:
+  gradeops_data:
+  gradeops_crops:

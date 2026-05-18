@@ -1,0 +1,41 @@
+# ── Python ────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.venv/
+venv/
+env/
+
+# ── Environment / Secrets ─────────────────────
+.env
+# keep .env.example (no real secrets)
+
+# ── Database / Generated Data ─────────────────
+backend/gradeops_data/db/grades.json
+backend/gradeops_data/db/ocr.json
+backend/gradeops_data/pdfs/
+backend/gradeops_data/crops/
+backend/crops/
+# allow placeholder files so git tracks the dirs
+!backend/crops/.gitkeep
+!backend/gradeops_data/crops/.gitkeep
+!backend/gradeops_data/pdfs/.gitkeep
+
+# ── Frontend ──────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ── Docker ────────────────────────────────────
+*.log
+
+# ── OS ────────────────────────────────────────
+.DS_Store
+Thumbs.db
