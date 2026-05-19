@@ -1,9 +1,3 @@
-Here is the merged and refined `README.md`. It combines the high-level project overviews, the detailed Docker and local setup instructions, the folder structure, and the API endpoints into a single, professional document.
-
-I also updated the AI configuration sections to reflect your final implementation architecture (Gemini for OCR, Groq for the LangGraph logic layer).
-
----
-
 # ⚡ GradeOps 🎓 — AI-Powered Exam Grading Pipeline
 
 **GradeOps** is a full-stack, Human-in-the-Loop (HITL) grading system designed to process, transcribe, and evaluate scanned handwritten student exams at scale.
