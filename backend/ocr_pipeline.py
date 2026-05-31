@@ -38,11 +38,13 @@ BackendType = Literal["qwen_vl", "nougat", "gemini", "mock"]
 @dataclass
 class OCRConfig:
     backend: BackendType = "gemini"    # default: gemini (no GPU needed)
-    device: str = "cpu"               # "cuda" | "cpu" (only used by qwen_vl/nougat)
+    device: str = "auto"               # "auto" | "cuda" | "cpu" (only used by qwen_vl/nougat)
     crop_output_dir: str = "./crops"
     dpi: int = 200                     # PDF → image resolution
     confidence_threshold: float = 0.5  # below this → flag for manual review
-    qwen_model_id: str = "Qwen/Qwen2-VL-7B-Instruct"
+    # Default to the 2B variant — fits in ~5 GB VRAM with fp16 (RTX 2050 etc.).
+    # Switch to "Qwen/Qwen2-VL-7B-Instruct" if you have ≥16 GB VRAM.
+    qwen_model_id: str = "Qwen/Qwen2-VL-2B-Instruct"
     nougat_model_id: str = "facebook/nougat-base"
     # Falls back to GEMINI_API_KEY env var if not passed explicitly
     gemini_api_key: str = field(
@@ -63,13 +65,37 @@ class _QwenVLBackend:
         from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
         import torch
 
-        logger.info("Loading Qwen2-VL model: %s", model_id)
-        self.processor = AutoProcessor.from_pretrained(model_id)
-        self.model = Qwen2VLForConditionalGeneration.from_pretrained(
+        logger.info("Loading Qwen2-VL model: %s (device=%s)", model_id, device)
+        # Cap image resolution to bound the vision-tower activation memory on
+        # small GPUs (a full-page crop can otherwise OOM a 4 GB card). max_pixels
+        # ~= 1280 visual tokens, plenty for a single handwritten answer crop.
+        self.processor = AutoProcessor.from_pretrained(
             model_id,
-            torch_dtype=torch.float16 if device == "cuda" else torch.float32,
-            device_map=device,
+            min_pixels=256 * 28 * 28,
+            max_pixels=1280 * 28 * 28,
         )
+        if device == "cuda":
+            # 2B in fp16 (~4 GB weights) doesn't fully fit in 4 GB VRAM. Let
+            # accelerate keep most layers on the GPU and offload the overflow to
+            # CPU RAM. max_memory reserves VRAM headroom for the vision tower and
+            # generation activations so the forward pass doesn't OOM.
+            self.model = Qwen2VLForConditionalGeneration.from_pretrained(
+                model_id,
+                dtype=torch.float16,
+                device_map="auto",
+                max_memory={0: "3GiB", "cpu": "16GiB"},
+                low_cpu_mem_usage=True,
+            )
+            self.input_device = "cuda"
+        else:
+            # CPU path: bfloat16 halves weight memory (~4 GB vs ~8 GB fp32).
+            self.model = Qwen2VLForConditionalGeneration.from_pretrained(
+                model_id,
+                dtype=torch.bfloat16,
+                low_cpu_mem_usage=True,
+            ).to(device)
+            self.input_device = device
+        self.model.eval()
         self.device = device
 
     def transcribe(self, image: Image.Image) -> tuple[str, float]:
@@ -94,7 +120,7 @@ class _QwenVLBackend:
         )
         inputs = self.processor(
             text=[text_input], images=[image], return_tensors="pt"
-        ).to(self.device)
+        ).to(self.input_device)
 
         with torch.no_grad():
             output_ids = self.model.generate(
@@ -296,12 +322,39 @@ class OCRPipeline:
 
     # ── private ───────────────────────────────
 
+    def _resolve_device(self) -> str:
+        """Resolve cfg.device. 'auto' picks CUDA if available, else CPU."""
+        requested = self.cfg.device
+        if requested != "auto":
+            return requested
+        try:
+            import torch
+            if torch.cuda.is_available():
+                logger.info("CUDA detected — using GPU for local OCR.")
+                return "cuda"
+        except ImportError:
+            pass
+        logger.info("No CUDA available — local OCR will run on CPU (expect slow inference).")
+        return "cpu"
+
     def _load_backend(self):
         b = self.cfg.backend
         if b == "qwen_vl":
-            return _QwenVLBackend(self.cfg.qwen_model_id, self.cfg.device)
+            try:
+                return _QwenVLBackend(self.cfg.qwen_model_id, self._resolve_device())
+            except ImportError as e:
+                raise RuntimeError(
+                    "qwen_vl backend requires 'torch', 'torchvision', and 'transformers'. "
+                    "Install with: pip install torch torchvision transformers accelerate"
+                ) from e
         elif b == "nougat":
-            return _NougatBackend(self.cfg.nougat_model_id, self.cfg.device)
+            try:
+                return _NougatBackend(self.cfg.nougat_model_id, self._resolve_device())
+            except ImportError as e:
+                raise RuntimeError(
+                    "nougat backend requires 'torch', 'transformers', and 'sentencepiece'. "
+                    "Install with: pip install torch transformers accelerate sentencepiece protobuf"
+                ) from e
         elif b == "gemini":
             return _GeminiBackend(self.cfg.gemini_api_key, self.cfg.gemini_ocr_model)
         elif b == "mock":

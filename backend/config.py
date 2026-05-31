@@ -41,8 +41,11 @@ class Settings(BaseSettings):
     jwt_expire_hours: int = 24
 
     # ── OCR ───────────────────────────────────
-    ocr_backend:      str = "gemini"     # gemini | qwen_vl | nougat | mock
-    ocr_device:       str = "cpu"        # cpu | cuda (only for qwen_vl/nougat)
+    # Backends: qwen_vl (local handwriting VLM) | gemini (cloud, no GPU) | nougat (printed docs) | mock
+    # Local OCR (qwen_vl) is enabled via OCR_BACKEND in .env after `pip install -r requirements.txt`.
+    # This code default stays "gemini" so the app still boots if torch/the model aren't present.
+    ocr_backend:      str = "gemini"
+    ocr_device:       str = "auto"       # auto | cpu | cuda — "auto" detects CUDA, falls back to CPU
     ocr_dpi:          int = 200
     ocr_crop_dir:     str = "./crops"
     gemini_ocr_model: str = "gemini-2.5-flash-lite"   # change to gemini-1.5-pro for higher accuracy

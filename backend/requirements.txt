@@ -21,10 +21,16 @@ Pillow                        # image handling
 # Google Gemini Vision API — used for OCR (no GPU required)
 google-generativeai>=0.8
 
-# Uncomment ONLY if switching to GPU-based OCR backends (qwen_vl / nougat):
-# torch>=2.0
-# transformers>=4.40
-# accelerate
+# Local OCR backend (Qwen2-VL-2B handwriting). See docs/LOCAL_OCR.md for setup.
+# NOTE: `pip install -r` gives the CPU build of torch. For GPU (recommended),
+# install a CUDA wheel matching your driver, e.g. for CUDA 13.x:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+torch>=2.0
+torchvision                   # required by Qwen2-VL processor (Qwen2VLVideoProcessor)
+transformers>=4.40
+accelerate                    # required for device_map offloading on small-VRAM GPUs
+sentencepiece                 # required by Nougat tokenizer
+protobuf                      # required by Nougat tokenizer
 
 # ── Grading LLM ───────────────────────────────
 langchain>=0.2

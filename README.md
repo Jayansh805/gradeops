@@ -9,7 +9,7 @@ It combines a robust asynchronous Python backend for Optical Character Recogniti
 * **Backend:** Python 3.10+, FastAPI, PostgreSQL + SQLAlchemy (async), Uvicorn
 * **Frontend:** React 18, Vite, Tailwind CSS v4, React Router
 * **AI/ML Pipeline:** LangChain, LangGraph, PyMuPDF, scikit-learn (plagiarism vector math)
-* **AI Models:** Gemini 2.5 Flash Lite (Vision/OCR), Groq / Llama-3.3-70b-versatile (Grading Logic)
+* **AI Models:** Qwen2-VL-2B (local handwriting OCR, GPU/CPU) or Gemini 2.5 Flash Lite (cloud OCR fallback), Groq / Llama-3.3-70b-versatile (Grading Logic)
 
 ---
 
@@ -125,7 +125,9 @@ JWT_SECRET=change_me_to_random_32_char_string
 JWT_EXPIRE_HOURS=24
 
 # AI Backends
-OCR_BACKEND=gemini       
+# OCR_BACKEND: qwen_vl (local handwriting VLM) | gemini (cloud) | nougat (printed) | mock
+OCR_BACKEND=qwen_vl
+OCR_DEVICE=auto          # auto-detects CUDA (RTX GPU), falls back to CPU
 GEMINI_OCR_MODEL=gemini-2.5-flash-lite
 GEMINI_API_KEY=your_gemini_key_here
 
@@ -138,6 +140,12 @@ STORAGE_BACKEND=local  # Switch to 's3' for production
 STORAGE_DATA_DIR=./gradeops_data
 
 ```
+
+> **Local OCR (Qwen2-VL-2B):** `pip install -r requirements.txt` installs the CPU
+> build of torch. For GPU acceleration, install a CUDA wheel matching your driver
+> (e.g. `pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130`).
+> Full setup, VRAM notes, and tuning are in [`docs/LOCAL_OCR.md`](docs/LOCAL_OCR.md).
+> No GPU? Set `OCR_BACKEND=gemini` to use the cloud backend instead.
 
 ---
 
